@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+	{% load static %}
+
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<meta charset="UTF-8">
+	<meta name="viewport">
+	<link rel="stylesheet" href="styles.css">
+	<style>
+		.chat{
+			background: #eee;
+			width:800px;
+			height: 600px;
+			overflow-y: scroll;
+		}
+		input{
+			width: 300px;
+		}
+		.my_text{
+			color:blue;
+		}
+		.bot_text{
+			color:black;
+			font-weight:700;
+		}
+	</style>
+</head>
+<body>
+<div class="container">
+	<h1>Bot</h1>
+	<input type="text" class="talk">
+<!---	<button class="talk">Talk</button> -->
+	<div class="chat">
+	</div>
+		{% csrf_token %}
+	</div>
+</div>
+</body>
+<script>
+$( document ).ready(function() {
+	function csrfSafeMethod(method) {
+	    // these HTTP methods do not require CSRF protection
+	    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+	}
+	var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
+	$.ajaxSetup({
+	    beforeSend: function(xhr, settings) {
+	        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+	            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+	        }
+	    }
+	});
+    console.log( "ready!" );
+
+	$("input.talk").keypress(function(e) {
+	    if(e.which == 13) {
+			$("div.chat").prepend('<p class="my_text">'+$("input.talk").val()+"</p>")
+			
+			$.ajax( {
+				data:{'talk':$("input.talk").val()},
+				dataType : "json",
+				type:"POST",
+				url:"talk.php"}
+				 )
+			  .done(function(data,e) {
+			    $("div.chat").prepend('<p class="bot_text">'+data['answer']+"</p>")
+			  })
+			  .fail(function(data,e) {
+			    console.log( data );
+			  })
+			  .always(function(data,e) {
+				$("input.talk").val('');
+			  });
+		}
+	});
+});
+</script>
+</html>
